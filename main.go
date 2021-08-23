@@ -17,7 +17,7 @@ func main() {
 
 	products.AppendProducts()
 
-	//r.HandleFunc("/login", Handler.Login)
+	r.HandleFunc("/login", Handler.Login)
 	r.Get("/viewProducts", Handler.ViewAll)
 
 
