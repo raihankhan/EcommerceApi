@@ -61,6 +61,17 @@ func main() {
 
 		r.Use(Authenticator)
 		r.Get("/view_products", Handler.ViewAll)
+		r.Post("/add_product", Handler.AddProduct)
+
+		//r.Route("/{ID}", func(r chi.Router) {
+		//	r.Use(ArticleCtx)
+		//	r.Get("/", getArticle)       // GET /articles/123
+		//	r.Put("/", updateArticle)    // PUT /articles/123
+		//	r.Delete("/", deleteArticle) // DELETE /articles/123
+		//})
+
+		r.Put("/update_product/{id}", Handler.UpdateProduct)
+		r.Delete("/delete_product/{id}", Handler.DelProduct)
 	})
 
 	log.Fatal(http.ListenAndServe(port, r))

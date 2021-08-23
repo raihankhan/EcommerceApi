@@ -3,7 +3,6 @@ package Handler
 import (
 	"EcommerceApi/products"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -28,7 +27,7 @@ type Claims struct {
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("hello")
+
 	var credentials Credentials
 
 	err := json.NewDecoder(r.Body).Decode(&credentials) // decode the bye request body to json and assign to credentials
@@ -37,8 +36,6 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println(credentials)
-
 	expectedPassword, available := User[credentials.Username]
 
 	if !available || expectedPassword != credentials.Password { // check is credentials exists and matches
@@ -46,7 +43,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	expirationTime := time.Now().Add(time.Minute * 1)
+	expirationTime := time.Now().Add(time.Minute * 5)
 
 	claims := &Claims{ // Create a claim object
 		Username: credentials.Username,
@@ -86,7 +83,6 @@ func ViewAll(w http.ResponseWriter, r *http.Request) {
 				tmp[key] = product
 			}
 		}
-
 		prod = tmp
 	}
 
@@ -96,5 +92,65 @@ func ViewAll(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
+
+}
+
+func AddProduct(w http.ResponseWriter, r *http.Request) {
+	var newProd products.Product
+	err := json.NewDecoder(r.Body).Decode(&newProd)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	_, doesExist := products.Products[newProd.ID]
+	if doesExist {
+		w.Write([]byte("Product already exists"))
+		w.WriteHeader(http.StatusConflict)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	products.Products[newProd.ID] = newProd
+
+}
+
+func UpdateProduct(w http.ResponseWriter, r *http.Request) {
+	var prod products.Product
+	err := json.NewDecoder(r.Body).Decode(&prod)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	_, doesExist := products.Products[prod.ID]
+	if !doesExist {
+		w.Write([]byte("Product doesn't exists"))
+		w.WriteHeader(http.StatusConflict)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	products.Products[prod.ID] = prod
+
+}
+
+func DelProduct(w http.ResponseWriter, r *http.Request) {
+	var prod products.Product
+	err := json.NewDecoder(r.Body).Decode(&prod)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	_, doesExist := products.Products[prod.ID]
+	if !doesExist {
+		w.Write([]byte("Product doesn't exists"))
+		w.WriteHeader(http.StatusConflict)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	delete(products.Products, prod.ID)
 
 }
