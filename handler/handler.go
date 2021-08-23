@@ -3,16 +3,18 @@ package Handler
 import (
 	"EcommerceApi/products"
 	"encoding/json"
-	"github.com/dgrijalva/jwt-go"
+	"fmt"
 	"net/http"
 	"time"
+
+	"github.com/dgrijalva/jwt-go"
 )
 
-var jwtkey = []byte("sage-jutsu")
+var Jwtkey = []byte("sage-jutsu")
 
-var User = map[string]string {
-	"User1" : "password1",
-	"User2" : "password2",
+var User = map[string]string{
+	"User1": "password1",
+	"User2": "password2",
 }
 
 type Credentials struct {
@@ -25,50 +27,56 @@ type Claims struct {
 	jwt.StandardClaims
 }
 
-func Login(w http.ResponseWriter , r *http.Request) {
+func Login(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("hello")
 	var credentials Credentials
 
 	err := json.NewDecoder(r.Body).Decode(&credentials) // decode the bye request body to json and assign to credentials
-	if err!=nil {
+	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	expectedPassword , available  := User[credentials.Username]
+	fmt.Println(credentials)
 
-	if !available || expectedPassword!=credentials.Password {	// check is credentials exists and matches
+	expectedPassword, available := User[credentials.Username]
+
+	if !available || expectedPassword != credentials.Password { // check is credentials exists and matches
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
-	expirationTime := time.Now().Add(time.Minute*10)
+	expirationTime := time.Now().Add(time.Minute * 1)
 
-	claims := &Claims{		// Create a claim object
+	claims := &Claims{ // Create a claim object
 		Username: credentials.Username,
-		StandardClaims : jwt.StandardClaims{
+		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationTime.Unix(),
 		},
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodES256 , claims)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	tokenString , err := token.SignedString(jwtkey)
+	tokenString, err := token.SignedString(Jwtkey)
 
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
 		return
 	}
 
-	http.SetCookie(w ,
+	http.SetCookie(w,
 		&http.Cookie{
-		Name: "token",
-		Value: tokenString,
-		Expires: expirationTime,
-		})
-
+			Name:    "token",
+			Value:   tokenString,
+			Expires: expirationTime,
+		},
+	)
+	w.WriteHeader(http.StatusOK)
 }
 
 func ViewAll(w http.ResponseWriter, r *http.Request) {
+
 	brand := r.URL.Query().Get("brand")
 	prod := products.Products
 	if len(brand) != 0 {
@@ -81,14 +89,6 @@ func ViewAll(w http.ResponseWriter, r *http.Request) {
 
 		prod = tmp
 	}
-
-
-
-	//w.Header().Set("Context-Type", "application/json")
-	//err := json.NewEncoder(w).Encode(prod)
-	//if err != nil {
-	//	return
-	//}
 
 	w.WriteHeader(http.StatusOK)
 	data, _ := json.Marshal(prod)
