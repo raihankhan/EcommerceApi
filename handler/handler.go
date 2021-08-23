@@ -52,8 +52,19 @@ func Login(w http.ResponseWriter , r *http.Request) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodES256 , claims)
 
+	tokenString , err := token.SignedString(jwtkey)
 
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
+	http.SetCookie(w ,
+		&http.Cookie{
+		Name: "token",
+		Value: tokenString,
+		Expires: expirationTime,
+		})
 
 }
 
