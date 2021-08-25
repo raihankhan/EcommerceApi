@@ -43,7 +43,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	expirationTime := time.Now().Add(time.Minute * 5)
+	expirationTime := time.Now().Add(time.Minute * 20)
 
 	claims := &Claims{ // Create a claim object
 		Username: credentials.Username,
@@ -72,9 +72,11 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func ViewAll(w http.ResponseWriter, r *http.Request) {
+func View(w http.ResponseWriter, r *http.Request) {
 
 	brand := r.URL.Query().Get("brand")
+	category := r.URL.Query().Get("category")
+
 	prod := products.Products
 	if len(brand) != 0 {
 		tmp := make(map[string]products.Product)
@@ -86,6 +88,15 @@ func ViewAll(w http.ResponseWriter, r *http.Request) {
 		prod = tmp
 	}
 
+	if len(category) != 0 {
+		for key, product := range products.Products {
+			if product.Category != category {
+				delete(prod, key)
+			}
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	data, _ := json.Marshal(prod)
 	_, err := w.Write(data)
@@ -93,6 +104,24 @@ func ViewAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+}
+
+func GetProduct(w http.ResponseWriter, r *http.Request) {
+
+	ctx := r.Context()
+	prod, ok := ctx.Value("id").(*products.Product)
+	if !ok {
+		http.Error(w, http.StatusText(422), 422)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	data, _ := json.Marshal(prod)
+	_, err := w.Write(data)
+	if err != nil {
+		return
+	}
 }
 
 func AddProduct(w http.ResponseWriter, r *http.Request) {
@@ -108,49 +137,64 @@ func AddProduct(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Product already exists"))
 		w.WriteHeader(http.StatusConflict)
 		return
+	} else if newProd.ID == "" {
+		w.Write([]byte("Product ID can't be empty"))
+		w.WriteHeader(http.StatusConflict)
+		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	//w.WriteHeader(http.StatusOK)
 	products.Products[newProd.ID] = newProd
 
 }
 
 func UpdateProduct(w http.ResponseWriter, r *http.Request) {
-	var prod products.Product
-	err := json.NewDecoder(r.Body).Decode(&prod)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+
+	ctx := r.Context()
+	prod, ok := ctx.Value("id").(*products.Product)
+	if !ok {
+		http.Error(w, http.StatusText(422), 422)
 		return
 	}
 
-	_, doesExist := products.Products[prod.ID]
-	if !doesExist {
-		w.Write([]byte("Product doesn't exists"))
-		w.WriteHeader(http.StatusConflict)
-		return
+	temp := products.Products
+
+	temp[prod.ID] = products.Product{
+		ID:          prod.ID,
+		ProductName: prod.ProductName,
+		Brand:       prod.Brand,
+		Category:    prod.Category,
+		IsAvailable: prod.IsAvailable,
+		Features:    prod.Features,
+		Price:       prod.Price,
 	}
 
+	products.Products = temp
+
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	products.Products[prod.ID] = prod
-
+	data, _ := json.Marshal(products.Products)
+	_, err := w.Write(data)
+	if err != nil {
+		return
+	}
 }
 
 func DelProduct(w http.ResponseWriter, r *http.Request) {
-	var prod products.Product
-	err := json.NewDecoder(r.Body).Decode(&prod)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
 
-	_, doesExist := products.Products[prod.ID]
-	if !doesExist {
-		w.Write([]byte("Product doesn't exists"))
-		w.WriteHeader(http.StatusConflict)
-		return
-	}
+	ctx := r.Context()
+	prod, _ := ctx.Value("id").(*products.Product)
 
-	w.WriteHeader(http.StatusOK)
 	delete(products.Products, prod.ID)
+
+	updatedProducts := products.Products
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	data, _ := json.Marshal(updatedProducts)
+	_, err := w.Write(data)
+	if err != nil {
+		return
+	}
 
 }

@@ -1,5 +1,7 @@
 package products
 
+import "errors"
+
 type Category struct {
 	Categories []Product `json:"Categories"`
 }
@@ -94,25 +96,10 @@ func AppendProducts() {
 	calcDiscountedPrice()
 }
 
-/*
-<<< field requirements >>>
-ID
-ProductName
-Brand/Manufacturer
-Category
-Features
-Price
-Discount
-DiscountedPrice
-
-<<< Method Requirements >>>
-
-GetAllProduct
-GetProductByID
-GetProductByBrand
-AddProduct
-ViewProduct
-DeleteProduct
-UpdateProduct
-
-*/
+func Find(key string) (*Product, error) {
+	item, exists := Products[key]
+	if !exists {
+		return nil, errors.New("product not found")
+	}
+	return &item, nil
+}
