@@ -58,7 +58,7 @@ func AppendProducts() {
 		ID:          "MP02",
 		ProductName: "Samsung J7",
 		Brand:       "Samsung",
-		Category:    "Mobile Phone",
+		Category:    "Mobile Phon",
 		IsAvailable: true,
 		Features:    nil,
 		Price: Price{

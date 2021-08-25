@@ -97,12 +97,14 @@ func View(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
 	data, _ := json.Marshal(prod)
 	_, err := w.Write(data)
 	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
+
+	w.WriteHeader(http.StatusOK)
 
 }
 
@@ -116,12 +118,14 @@ func GetProduct(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
 	data, _ := json.Marshal(prod)
 	_, err := w.Write(data)
 	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
+
+	w.WriteHeader(http.StatusOK)
 }
 
 func AddProduct(w http.ResponseWriter, r *http.Request) {
@@ -143,9 +147,9 @@ func AddProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//w.WriteHeader(http.StatusOK)
 	products.Products[newProd.ID] = newProd
 
+	w.WriteHeader(http.StatusOK)
 }
 
 func UpdateProduct(w http.ResponseWriter, r *http.Request) {
@@ -157,27 +161,24 @@ func UpdateProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	temp := products.Products
-
-	temp[prod.ID] = products.Product{
-		ID:          prod.ID,
-		ProductName: prod.ProductName,
-		Brand:       prod.Brand,
-		Category:    prod.Category,
-		IsAvailable: prod.IsAvailable,
-		Features:    prod.Features,
-		Price:       prod.Price,
-	}
-
-	products.Products = temp
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	data, _ := json.Marshal(products.Products)
-	_, err := w.Write(data)
+	var updatedProd products.Product
+	err := json.NewDecoder(r.Body).Decode(&updatedProd)
 	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+
+	products.Products[prod.ID] = updatedProd
+
+	w.Header().Set("Content-Type", "application/json")
+	data, _ := json.Marshal(products.Products)
+	_, err = w.Write(data)
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
 
 func DelProduct(w http.ResponseWriter, r *http.Request) {
@@ -190,11 +191,13 @@ func DelProduct(w http.ResponseWriter, r *http.Request) {
 	updatedProducts := products.Products
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
 	data, _ := json.Marshal(updatedProducts)
 	_, err := w.Write(data)
 	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
+
+	w.WriteHeader(http.StatusOK)
 
 }

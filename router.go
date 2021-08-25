@@ -55,7 +55,6 @@ func GetRouter() chi.Router {
 			r.Route("/{id}", func(r chi.Router) {
 
 				r.Use(IDCtx)
-
 				r.Get("/", Handler.GetProduct)
 				r.Delete("/", Handler.DelProduct)
 				r.Put("/", Handler.UpdateProduct)
