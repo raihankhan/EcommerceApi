@@ -78,7 +78,8 @@ func View(w http.ResponseWriter, r *http.Request) {
 	category := r.URL.Query().Get("category")
 
 	prod := products.Products
-	if len(brand) != 0 {
+
+	if len(brand) != 0 { //filter product by brand
 		tmp := make(map[string]products.Product)
 		for key, product := range products.Products {
 			if product.Brand == brand {
@@ -88,7 +89,7 @@ func View(w http.ResponseWriter, r *http.Request) {
 		prod = tmp
 	}
 
-	if len(category) != 0 {
+	if len(category) != 0 { //filter product by category
 		for key, product := range products.Products {
 			if product.Category != category {
 				delete(prod, key)
@@ -96,16 +97,7 @@ func View(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	data, _ := json.Marshal(prod)
-	_, err := w.Write(data)
-	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-
+	SetResponse(w, prod)
 }
 
 func GetProduct(w http.ResponseWriter, r *http.Request) {
@@ -148,12 +140,11 @@ func AddProduct(w http.ResponseWriter, r *http.Request) {
 	}
 
 	products.Products[newProd.ID] = newProd
-
+	w.Write([]byte("Product " + newProd.ID + " Has been Added"))
 	w.WriteHeader(http.StatusOK)
 }
 
 func UpdateProduct(w http.ResponseWriter, r *http.Request) {
-
 	ctx := r.Context()
 	prod, ok := ctx.Value("id").(*products.Product)
 	if !ok {
@@ -167,31 +158,20 @@ func UpdateProduct(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-
 	products.Products[prod.ID] = updatedProd
-
-	w.Header().Set("Content-Type", "application/json")
-	data, _ := json.Marshal(products.Products)
-	_, err = w.Write(data)
-	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
+	SetResponse(w, products.Products)
 }
 
 func DelProduct(w http.ResponseWriter, r *http.Request) {
-
 	ctx := r.Context()
 	prod, _ := ctx.Value("id").(*products.Product)
-
 	delete(products.Products, prod.ID)
+	SetResponse(w, products.Products)
+}
 
-	updatedProducts := products.Products
-
+func SetResponse(w http.ResponseWriter, prod map[string]products.Product) {
 	w.Header().Set("Content-Type", "application/json")
-	data, _ := json.Marshal(updatedProducts)
+	data, _ := json.Marshal(prod)
 	_, err := w.Write(data)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
@@ -199,5 +179,4 @@ func DelProduct(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-
 }
