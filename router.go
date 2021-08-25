@@ -15,12 +15,9 @@ func IDCtx(next http.Handler) http.Handler {
 		var prod *products.Product
 		var err error
 
-		if prodID := chi.URLParam(r, "id"); prodID != "" {
-			prod, err = products.Find(prodID)
-		} else {
-			w.WriteHeader(http.StatusNotFound)
-			return
-		}
+		prodID := chi.URLParam(r, "id")
+		prod, err = products.Find(prodID)
+
 		if err != nil {
 			w.WriteHeader(http.StatusNotFound)
 			return
