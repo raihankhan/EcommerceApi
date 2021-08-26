@@ -2,11 +2,12 @@ package main
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	Handler "github.com/raihankhan/EcommerceApi/handler"
 	"github.com/raihankhan/EcommerceApi/products"
-	"net/http"
 )
 
 func IDCtx(next http.Handler) http.Handler {
@@ -38,7 +39,12 @@ func GetRouter() chi.Router {
 	products.AppendProducts()
 
 	r.Post("/login", Handler.Login)
+	groupProducts(r)
 
+	return r
+}
+
+func groupProducts(r chi.Router) {
 	r.Group(func(r chi.Router) {
 
 		r.Use(Authenticator)
@@ -58,6 +64,4 @@ func GetRouter() chi.Router {
 
 		})
 	})
-
-	return r
 }
