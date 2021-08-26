@@ -1,4 +1,4 @@
-module EcommerceApi
+module github.com/raihankhan/EcommerceApi
 
 go 1.16
 
