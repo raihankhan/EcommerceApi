@@ -1,13 +1,12 @@
 package main
 
 import (
-	Handler "EcommerceApi/handler"
-	"EcommerceApi/products"
 	"context"
-	"net/http"
-
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	Handler "github.com/raihankhan/EcommerceApi/handler"
+	"github.com/raihankhan/EcommerceApi/products"
+	"net/http"
 )
 
 func IDCtx(next http.Handler) http.Handler {

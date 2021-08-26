@@ -1,12 +1,11 @@
 package Handler
 
 import (
-	"EcommerceApi/products"
 	"encoding/json"
+	"github.com/dgrijalva/jwt-go"
+	"github.com/raihankhan/EcommerceApi/products"
 	"net/http"
 	"time"
-
-	"github.com/dgrijalva/jwt-go"
 )
 
 var Jwtkey = []byte("sage-jutsu")
