@@ -2,10 +2,11 @@ package Handler
 
 import (
 	"encoding/json"
-	"github.com/dgrijalva/jwt-go"
-	"github.com/raihankhan/EcommerceApi/products"
 	"net/http"
 	"time"
+
+	"github.com/dgrijalva/jwt-go"
+	"github.com/raihankhan/EcommerceApi/products"
 )
 
 var Jwtkey = []byte("sage-jutsu")
@@ -68,6 +69,18 @@ func Login(w http.ResponseWriter, r *http.Request) {
 			Expires: expirationTime,
 		},
 	)
+	w.WriteHeader(http.StatusOK)
+}
+
+func SetResponse(w http.ResponseWriter, prod map[string]products.Product) {
+	w.Header().Set("Content-Type", "application/json")
+	data, _ := json.Marshal(prod)
+	_, err := w.Write(data)
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -168,14 +181,6 @@ func DelProduct(w http.ResponseWriter, r *http.Request) {
 	SetResponse(w, products.Products)
 }
 
-func SetResponse(w http.ResponseWriter, prod map[string]products.Product) {
-	w.Header().Set("Content-Type", "application/json")
-	data, _ := json.Marshal(prod)
-	_, err := w.Write(data)
-	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
+func AddFeature(w http.ResponseWriter, r *http.Request) {
 
-	w.WriteHeader(http.StatusOK)
 }

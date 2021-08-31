@@ -60,6 +60,10 @@ func groupProducts(r chi.Router) {
 				r.Get("/", Handler.GetProduct)
 				r.Delete("/", Handler.DelProduct)
 				r.Put("/", Handler.UpdateProduct)
+
+				//mount feature route and create api ViewFeature , AddFeature , UpdateFeature
+				//mount price and create api to viewPrice , update price , update discount
+				//toggle availability
 			})
 
 		})
