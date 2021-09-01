@@ -6,8 +6,8 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	Handler "github.com/raihankhan/EcommerceApi/handler"
-	"github.com/raihankhan/EcommerceApi/products"
+	Handler "github.com/raihankhan/ecommerceApi/handler"
+	"github.com/raihankhan/ecommerceApi/products"
 )
 
 func IDCtx(next http.Handler) http.Handler {

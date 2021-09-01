@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/raihankhan/EcommerceApi/products"
+	"github.com/raihankhan/ecommerceApi/products"
 )
 
 var Jwtkey = []byte("sage-jutsu")

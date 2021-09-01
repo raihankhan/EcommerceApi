@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
-	Handler "github.com/raihankhan/EcommerceApi/handler"
 	"net/http"
+
+	"github.com/dgrijalva/jwt-go"
+	Handler "github.com/raihankhan/ecommerceApi/handler"
 )
 
 func Authenticator(next http.Handler) http.Handler {
