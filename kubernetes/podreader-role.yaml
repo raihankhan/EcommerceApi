@@ -4,7 +4,7 @@ metadata:
   namespace: default
   name: pod-reader
 rules:
-  - verbs: ["get", "watch" ]
+  - verbs: ["get", "watch" , "list"]
     resources: ["pods"]
     apiGroups: [""] # "" indicates the core API group
 ---
@@ -18,7 +18,7 @@ metadata:
 subjects:
   # You can specify more than one "subject"
   - kind: User
-    name: "raihan@appscode.com" # "name" is case sensitive
+    name: raihan # "name" is case sensitive
     apiGroup: rbac.authorization.k8s.io
 roleRef:
   # "roleRef" specifies the binding to a Role / ClusterRole

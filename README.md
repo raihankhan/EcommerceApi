@@ -75,7 +75,7 @@ spec:
 
 4. Modify /etc/hosts on the host to direct traffic to the kind cluster’s ingress controller. We’ll need to get the IP address of our kind node’s Docker container first by running:
 
-```
+```azure
 docker container inspect kind-control-plane \
               --f '{{ .NetworkSettings.Networks.kind.IPAddress }}'
 ```
@@ -122,3 +122,43 @@ spec:
 `GET` `http://e-sell.com/products/LT01`
 
 `Note :` Create your deployment and ingress all in ingress-controller namespace. This namespace is created while creating the controller in step 2.
+
+## Test role and rolebinding
+
+Set the yaml for role and rolebinding with a user.
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: default
+  name: pod-reader
+rules:
+  - verbs: ["get", "watch" , "list"]
+    resources: ["pods"]
+    apiGroups: [""] # "" indicates the core API group
+---
+apiVersion: rbac.authorization.k8s.io/v1
+# This role binding allows "raihan@appscode.com" to read pods in the "default" namespace.
+# You need to already have a Role named "pod-reader" in that namespace.
+kind: RoleBinding
+metadata:
+  name: read-pods
+  namespace: default
+subjects:
+  # You can specify more than one "subject"
+  - kind: User
+    name: raihan # "name" is case sensitive
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  # "roleRef" specifies the binding to a Role / ClusterRole
+  kind: Role #this must be Role or ClusterRole
+  name: pod-reader # this must match the name of the Role or ClusterRole you wish to bind to
+  apiGroup: rbac.authorization.k8s.io
+```
+
+Now test if you can get(list) the pods in default namespace using --as flag
+
+```azure
+kubectl get pods --as raihan
+```
