@@ -34,6 +34,44 @@ Then create a kind cluster using this config file via:
   `kubectl apply --filename https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/kind/deploy.yaml`
   
 3. Deploy necessary pods and services
+In this case, I am deploying following deployment and service.
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-server
+  labels:
+    app: server
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: server
+  template:
+    metadata:
+      labels:
+        app: server
+    spec:
+      containers:
+      - name: ecommerce
+        image: raihankhanraka/ecommerce-api:v1.0
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: server-svc
+spec:
+  selector:
+    app: server
+  ports:
+    - protocol: TCP
+      port: 8080
+
+---
+
+```
 
 4. Modify /etc/hosts on the host to direct traffic to the kind cluster’s ingress controller. We’ll need to get the IP address of our kind node’s Docker container first by running:
 
@@ -44,38 +82,43 @@ docker container inspect kind-control-plane \
 
 Then add an entry to /etc/hosts with the IP address found that looks like:
 
-`172.18.0.2 evally.com`
+`172.18.0.2 e-sell.com`
 
-5. Create the ingress yaml
+5. Create ingress with the yaml
 
 ```yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: example-ingress
+  name: ingress
 spec:
   rules:
-    - host: evally.com
+    - host: e-sell.com
       http:
         paths:
           - pathType: Prefix
-            path: "/status"
+            path: "/login"
             backend:
               service:
-                name: foo-service
+                name: server-svc
                 port:
-                  number: 5678
+                  number: 8080
+
           - pathType: Prefix
-            path: "/offer"
+            path: "/products"
             backend:
               service:
-                name: bar-service
+                name: server-svc
                 port:
-                  number: 5678
+                  number: 8080
 ```
 
-6. Finally, we can curl evally.com:
+6. Finally, Go to Postman and send these queries to test that we have been able to successfully expose our application in kubernetes cluster using ingress -
 
-`curl evally.com/status`
+`POST` `http://e-sell.com/login`
 
-`curl evally.com/offer`
+`GET` `http://e-sell.com/products`
+
+`GET` `http://e-sell.com/products/LT01`
+
+`Note :` Use create your deployment and ingress all in ingress-controller namespace. This namespace is created while creating the controller in step 2.
