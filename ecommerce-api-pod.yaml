@@ -1,0 +1,14 @@
+apiVersion: app/v1
+# Pod starts with capital letter
+kind: Pod
+metadata:
+  name: ecommerce-api
+spec:
+  containers:
+    - image: raihankhanraka/ecommerce-api:v1.1
+      # container name must not use alphanumeric  characters
+      name: ecommerce-api
+      ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP

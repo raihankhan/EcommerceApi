@@ -30,30 +30,33 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	var credentials Credentials
 
-	err := json.NewDecoder(r.Body).Decode(&credentials) // decode the bye request body to json and assign to credentials
+	// decode the bye request body to json and assign to credentials
+	err := json.NewDecoder(r.Body).Decode(&credentials)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
+	// check is credentials exists and matches
 	expectedPassword, available := User[credentials.Username]
-
-	if !available || expectedPassword != credentials.Password { // check is credentials exists and matches
+	if !available || expectedPassword != credentials.Password {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
+	// Set a session expiration time
 	expirationTime := time.Now().Add(time.Minute * 20)
 
-	claims := &Claims{ // Create a claim object
+	// Create a claim object
+	claims := &Claims{
 		Username: credentials.Username,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationTime.Unix(),
 		},
 	}
 
+	// generate the signed token string
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
 	tokenString, err := token.SignedString(Jwtkey)
 
 	if err != nil {
@@ -62,6 +65,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// set the token string and expiration time in the cookie
 	http.SetCookie(w,
 		&http.Cookie{
 			Name:    "token",
@@ -91,7 +95,8 @@ func View(w http.ResponseWriter, r *http.Request) {
 
 	prod := products.Products
 
-	if len(brand) != 0 { //filter product by brand
+	//filter product by brand
+	if len(brand) != 0 {
 		tmp := make(map[string]products.Product)
 		for key, product := range products.Products {
 			if product.Brand == brand {
@@ -101,7 +106,8 @@ func View(w http.ResponseWriter, r *http.Request) {
 		prod = tmp
 	}
 
-	if len(category) != 0 { //filter product by category
+	//filter product by category
+	if len(category) != 0 {
 		for key, product := range products.Products {
 			if product.Category != category {
 				delete(prod, key)
@@ -181,6 +187,6 @@ func DelProduct(w http.ResponseWriter, r *http.Request) {
 	SetResponse(w, products.Products)
 }
 
-func AddFeature(w http.ResponseWriter, r *http.Request) {
-
-}
+//func AddFeature(w http.ResponseWriter, r *http.Request) {
+//
+//}
