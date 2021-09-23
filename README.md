@@ -121,4 +121,4 @@ spec:
 
 `GET` `http://e-sell.com/products/LT01`
 
-`Note :` Use create your deployment and ingress all in ingress-controller namespace. This namespace is created while creating the controller in step 2.
+`Note :` Create your deployment and ingress all in ingress-controller namespace. This namespace is created while creating the controller in step 2.
