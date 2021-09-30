@@ -162,3 +162,107 @@ Now test if you can get(list) the pods in default namespace using --as flag
 ```azure
 kubectl get pods --as raihan
 ```
+
+
+## Use client-go library to develop kubernetes native app
+
+Retrieve the kubeconfig file path from local host in order to build config using clientcmd package.
+
+```go
+var kubeconfig *string
+	if home := homedir.HomeDir(); home != "" {
+		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "absolute path to the kubeconfig file")
+	} else {
+		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
+	}
+	flag.Parse()
+  config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
+  ```
+
+if you are running your application in kubernetes cluster, Then build the config like this -
+
+```go
+config, err = rest.InClusterConfig()
+```
+// InClusterConfig returns a config object which uses the service account
+// kubernetes gives to pods. It's intended for clients that expect to be
+// running inside a pod running on kubernetes. It will return ErrNotInCluster
+// if called from a process not running in a kubernetes environment.
+
+Build your dynamic client using this config
+
+```go
+dynamicClient, err := dynamic.NewForConfig(config)
+```
+
+NewForConfig creates a new dynamic client or returns an error.
+
+Create deployment resource
+```go
+depResource := schema.GroupVersionResource{
+		Group:    "apps",
+		Version:  "v1",
+		Resource: "deployments",
+	}
+``
+
+create a deployment using client-go dynamic package. // Unstructured allows objects that do not have Golang structs registered to be manipulated
+// generically. This can be used to deal with the API objects from a plug-in. Unstructured
+// objects still have functioning TypeMeta features-- kind, version, etc.
+
+```go
+deployment := &unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"apiVersion": "apps/v1",
+			"kind":       "Deployment",
+			"metadata": map[string]interface{}{
+				"name": "apiserver",
+			},
+			"spec": map[string]interface{}{
+				"replicas": 2,
+				"selector": map[string]interface{}{
+					"matchLabels": map[string]interface{}{
+						"app": "server",
+					},
+				},
+				"template": map[string]interface{}{
+					"metadata": map[string]interface{}{
+						"labels": map[string]interface{}{
+							"app": "server",
+						},
+					},
+					"spec": map[string]interface{}{
+						"containers": []map[string]interface{}{
+							{
+								"name":  "ecommerce",
+								"image": "raihankhanraka/ecommerce-api:v1.1",
+								"ports": []map[string]interface{}{
+									{
+										"name":          "http",
+										"protocol":      "TCP",
+										"containerPort": 8080,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+  ```
+
+Now create deployment.
+
+```go
+dep, err := dynamicClient.Resource(depResource).Namespace("default").Create(context.TODO(), deployment, v1.CreateOptions{})
+```
+
+```go
+svcResource := schema.GroupVersionResource{
+		//Group:    "",
+		Version:  "v1",
+		Resource: "services",
+	}
+```
+
