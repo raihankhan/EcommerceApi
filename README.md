@@ -75,7 +75,7 @@ spec:
 
 4. Modify /etc/hosts on the host to direct traffic to the kind cluster’s ingress controller. We’ll need to get the IP address of our kind node’s Docker container first by running:
 
-```azure
+```go
 docker container inspect kind-control-plane \
               --f '{{ .NetworkSettings.Networks.kind.IPAddress }}'
 ```
@@ -204,9 +204,21 @@ depResource := schema.GroupVersionResource{
 		Version:  "v1",
 		Resource: "deployments",
 	}
-``
+```
+// GroupVersionResource unambiguously identifies a resource.  It doesn't anonymously include GroupVersion
+// to avoid automatic coercion.  It doesn't use a GroupVersion to avoid custom marshalling
+type GroupVersionResource struct {
+Group    string
+Version  string
+Resource string
+}
+```go
 
-create a deployment using client-go dynamic package. // Unstructured allows objects that do not have Golang structs registered to be manipulated
+```
+
+create a deployment using client-go dynamic package. 
+	
+// Unstructured allows objects that do not have Golang structs registered to be manipulated
 // generically. This can be used to deal with the API objects from a plug-in. Unstructured
 // objects still have functioning TypeMeta features-- kind, version, etc.
 
@@ -260,9 +272,37 @@ dep, err := dynamicClient.Resource(depResource).Namespace("default").Create(cont
 
 ```go
 svcResource := schema.GroupVersionResource{
-		//Group:    "",
-		Version:  "v1",
-		Resource: "services",
-	}
+//Group:    "",
+Version:  "v1",
+Resource: "services",
+}
+
+service := &unstructured.Unstructured{
+Object: map[string]interface{}{
+"apiVersion": "v1",
+"kind":       "Service",
+"metadata": map[string]interface{}{
+"name": "server-svc",
+},
+"spec": map[string]interface{}{
+"selector": map[string]interface{}{
+"app": "server",
+},
+"ports": []map[string]interface{}{
+{
+"protocol":   "TCP",
+"targetPort": 8080,
+"port":       8080,
+},
+},
+},
+},
+}
+
+fmt.Printf("creating service %s\n", service.GetName())
+svc, err := dynamicClient.Resource(svcResource).Namespace("default").Create(context.TODO(), service, v1.CreateOptions{})
+if err != nil {
+panic(fmt.Errorf("failed to create service -- %s\n", err.Error()))
+}
 ```
 
