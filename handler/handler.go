@@ -73,7 +73,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 			Expires: expirationTime,
 		},
 	)
-	w.Write([]byte("Welcome " + User[credentials.Username]))
+	w.Write([]byte("Welcome " + credentials.Username))
 	w.WriteHeader(http.StatusOK)
 }
 
