@@ -308,16 +308,16 @@ panic(fmt.Errorf("failed to create service -- %s\n", err.Error()))
 
 ## kubernetes under the hood
 
-    - kubectl translates your imperative command into a declarative Kubernetes Deployment object. A Deployment is a higher-level API that allows rolling updates (see below).
-    - kubectl sends the Deployment to the Kubernetes API server, kube-apiserver, which runs in-cluster.
-    - kube-apiserver saves the Deployment to etcd (a distributed key-value store), which also runs in-cluster, and responds to kubectl.
-    - Asynchronously, the Kubernetes controller manager, kube-controller-manager, which watches for Deployment events (among others), creates a ReplicaSet from the Deployment and sends it to kube-apiserver. A ReplicaSet is a version of a Deployment. During a rolling update, a new ReplicaSet will be created and progressively scaled out to the desired number of replicas, while the old one is scaled in to zero.
-    - kube-apiserver saves the ReplicaSet to etcd.
-    - Asynchronously, kube-controller-manager, creates two Pods (or more if we scale out) from the ReplicaSet and sends them to kube-apiserver. Pods are the basic unit of Kubernetes. They represent one or several containers sharing a Linux cgroup and namespaces.
-    - kube-apiserver saves the Pods to etcd.
-    - Asynchronously, the Kubernetes scheduler, kube-scheduler, which watches for Pod events, updates each Pod to assign it to a Node and sends them back to kube-apiserver.
-    - kube-apiserver saves the Pods to etcd.
-    - Finally, the kubelet that runs on the assigned Node, always watching, actually starts the container.
+ - kubectl translates your imperative command into a declarative Kubernetes Deployment object. A Deployment is a higher-level API that allows rolling updates (see below).
+ - kubectl sends the Deployment to the Kubernetes API server, kube-apiserver, which runs in-cluster.
+ - kube-apiserver saves the Deployment to etcd (a distributed key-value store), which also runs in-cluster, and responds to kubectl.
+ - Asynchronously, the Kubernetes controller manager, kube-controller-manager, which watches for Deployment events (among others), creates a ReplicaSet from the Deployment and sends it to kube-apiserver. A ReplicaSet is a version of a Deployment. During a rolling update, a new ReplicaSet will be created and progressively scaled out to the desired number of replicas, while the old one is scaled in to zero.
+ - kube-apiserver saves the ReplicaSet to etcd.
+ - Asynchronously, kube-controller-manager, creates two Pods (or more if we scale out) from the ReplicaSet and sends them to kube-apiserver. Pods are the basic unit of Kubernetes. They represent one or several containers sharing a Linux cgroup and namespaces.
+ - kube-apiserver saves the Pods to etcd.
+ - Asynchronously, the Kubernetes scheduler, kube-scheduler, which watches for Pod events, updates each Pod to assign it to a Node and sends them back to kube-apiserver.
+ - kube-apiserver saves the Pods to etcd.
+ - Finally, the kubelet that runs on the assigned Node, always watching, actually starts the container.
 
 Note: the controller, scheduler and kubelet also send status information back to the API server.
 
