@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: ecommerce
-        image: raihankhanraka/ecommerce-api:v1.0
+        image: raihankhanraka/ecommerce-api:v1.2
         ports:
         - containerPort: 8080
 ---

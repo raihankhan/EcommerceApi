@@ -1,28 +1,40 @@
-# Dockerfile References: https://docs.docker.com/engine/reference/builder/
+# syntax=docker/dockerfile:1
 
-# Start from the latest golang base image
-FROM golang:latest
+##
+## Build
+##
 
-# Add Maintainer Info
-LABEL maintainer="Raihan Khan <raihan@appscode.com>"
+FROM golang:1.17-alpine AS builder
 
-# Set the Current Working Directory inside the container
+# Set destination for COPY
 WORKDIR /app
 
-# Copy go mod and sum files
+# Download Go modules
 COPY go.mod go.sum ./
 
-# Download all dependencies. Dependencies will be cached if the go.mod and go.sum files are not changed
 RUN go mod download
 
-# Copy the source from the current directory to the Working Directory inside the container
+# Copy the source code. Note the slash at the end, as explained in
+# https://docs.docker.com/engine/reference/builder/#copy
 COPY . .
 
-# Build the Go app
-RUN go build -o ecommerceApi .
+# Build
+RUN CGO_ENABLED=0 GOOS=linux go build -o /ecommerceApi
 
-# Expose port 8080 to the outside world
+##
+## Deploy
+##
+
+FROM alpine:latest
+
+RUN apk --no-cache add ca-certificates
+
+WORKDIR /
+
+# Copy the Pre-built binary file from the previous stage
+COPY --from=builder /ecommerceApi /ecommerceApi
+
 EXPOSE 8080
 
-# Command to run the executable
-CMD ["./ecommerceApi"]
+# Run
+CMD [ "./ecommerceApi" ]
