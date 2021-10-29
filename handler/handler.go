@@ -26,6 +26,8 @@ type Claims struct {
 	jwt.StandardClaims
 }
 
+// Login to the server using jwt authentication
+
 func Login(w http.ResponseWriter, r *http.Request) {
 
 	var credentials Credentials
@@ -73,7 +75,20 @@ func Login(w http.ResponseWriter, r *http.Request) {
 			Expires: expirationTime,
 		},
 	)
-	w.Write([]byte("Welcome " + credentials.Username))
+
+	prod := products.Products
+	data, err := json.Marshal(prod)
+	if err != nil {
+		w.WriteHeader(http.StatusNotAcceptable)
+		return
+	}
+	msg := []byte("Welcome " + credentials.Username + "\n")
+	data = append(msg, data...)
+	_, err = w.Write(data)
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -88,6 +103,8 @@ func SetResponse(w http.ResponseWriter, prod map[string]products.Product) {
 
 	w.WriteHeader(http.StatusOK)
 }
+
+//view products
 
 func View(w http.ResponseWriter, r *http.Request) {
 
@@ -119,6 +136,8 @@ func View(w http.ResponseWriter, r *http.Request) {
 	SetResponse(w, prod)
 }
 
+// Get product by id
+
 func GetProduct(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
@@ -138,6 +157,8 @@ func GetProduct(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 }
+
+// Add a new product to the List
 
 func AddProduct(w http.ResponseWriter, r *http.Request) {
 	var newProd products.Product
@@ -163,6 +184,8 @@ func AddProduct(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+// Update a product with it's full specification
+
 func UpdateProduct(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	prod, ok := ctx.Value("id").(*products.Product)
@@ -180,6 +203,8 @@ func UpdateProduct(w http.ResponseWriter, r *http.Request) {
 	products.Products[prod.ID] = updatedProd
 	SetResponse(w, products.Products)
 }
+
+//Delete a Specific product by it's ID
 
 func DelProduct(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
